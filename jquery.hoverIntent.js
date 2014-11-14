@@ -58,11 +58,15 @@
             cY = ev.pageY;
         };
 
+        var computeDistance = function(dx, dy) {
+           return Math.sqrt( dx*dx + dy*dy );
+        };
+
         // A private function for comparing current and previous mouse position
         var compare = function(ev,ob) {
             ob.hoverIntent_t = clearTimeout(ob.hoverIntent_t);
             // compare mouse positions to see if they've crossed the threshold
-            if ( Math.sqrt( (pX-cX)*(pX-cX) + (pY-cY)*(pY-cY) ) < cfg.sensitivity ) {
+            if (  computeDistance( pX-cX, pY-cY ) < cfg.sensitivity ) {
                 $(ob).off("mousemove.hoverIntent",track);
                 // set hoverIntent state to true (so mouseOut can be called)
                 ob.hoverIntent_s = true;
@@ -85,7 +89,7 @@
         // A private function for handling mouse 'hovering'
         var handleHover = function(e) {
             // copy objects to be passed into t (required for event object to be passed in IE)
-            var ev = $.extend({},e);
+            var ev = $.extend({}, e);
             var ob = this;
 
             // cancel hoverIntent timer if it exists
@@ -96,20 +100,25 @@
                 // set "previous" X and Y position based on initial entry point
                 pX = ev.pageX; pY = ev.pageY;
                 // update "current" X and Y position based on mousemove
-                $(ob).on("mousemove.hoverIntent",track);
+                $(ob).on("mousemove.hoverIntent", track);
                 // start polling interval (self-calling timeout) to compare mouse coordinates over time
-                if (!ob.hoverIntent_s) { ob.hoverIntent_t = setTimeout( function(){compare(ev,ob);} , cfg.interval );}
+                if (!ob.hoverIntent_s)
+                    ob.hoverIntent_t = setTimeout( function() { compare(ev,ob); }, cfg.interval );
 
                 // else e.type == "mouseleave"
             } else {
                 // unbind expensive mousemove event
-                $(ob).off("mousemove.hoverIntent",track);
+                $(ob).off("mousemove.hoverIntent", track);
                 // if hoverIntent state is true, then call the mouseOut function after the specified delay
-                if (ob.hoverIntent_s) { ob.hoverIntent_t = setTimeout( function(){delay(ev,ob);} , cfg.timeout );}
+                if (ob.hoverIntent_s)
+                    ob.hoverIntent_t = setTimeout( function() { delay(ev,ob); }, cfg.timeout);
             }
         };
 
         // listen for mouseenter and mouseleave
-        return this.on({'mouseenter.hoverIntent':handleHover,'mouseleave.hoverIntent':handleHover}, cfg.selector);
+        return this.on({
+            'mouseenter.hoverIntent':handleHover,
+            'mouseleave.hoverIntent':handleHover
+        }, cfg.selector);
     };
 })(jQuery);
